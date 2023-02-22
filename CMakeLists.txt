@@ -69,6 +69,7 @@ add_subdirectory(python)
 include_directories(src/include)
 include_directories(src/graphics)
 include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 set(LIBS "${LIBS};${PYTHON_LIBRARIES}")
 
 add_definitions(-DWITH_CMAKE)
