@@ -9,6 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # the input file is here M5_O95
-a=star2d('M5_O95')
+a=star2d('star.h5')
 plt.plot(a.r[:],np.log10(a.rho[:]))
 plt.show()
