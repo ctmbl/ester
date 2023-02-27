@@ -20,6 +20,7 @@ def main():
     attributes = ["M", "R", "test_virial", "test_energy"]
     for path in models_paths:
         model = ester.star1d(path)
+        LOGGER.debug("parsing model file at path '%s'", path)
         key = str(model.Z[0])
         if not key in stars:
             # key : {"M": [model.M], "R": [model.R], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
