@@ -34,9 +34,23 @@ def main():
                 stars[key][attr].append(getattr(model, attr))
             LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
-#    for key, value in stars.items():
-    plt.plot("R", "M", data=stars["[0.]"])
+    for key in stars:
+        stars[key]['M'] = list(map(lambda x: x/ester.M_SUN, stars[key]['M']))
+        stars[key]['R'] = list(map(lambda x: x/ester.R_SUN, stars[key]['R']))
 
+    STYLES = iter(["bx", "rx"])
+
+    RM_fig, RM_axes = plt.subplots()
+    plt.xlabel("M/M_sun")
+    plt.ylabel("R/R_sun")
+
+    for key, value in stars.items():
+        try:
+            RM_axes.plot("M", "R", next(STYLES), data=stars[key], label=key)
+        except StopIteration:
+            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+
+    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
