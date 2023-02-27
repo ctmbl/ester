@@ -8,6 +8,7 @@ import numpy as np
 import ester
 
 ARGS = None
+LOGGER = None
 
 def main():
     # list files in the chosen folder
@@ -25,12 +26,12 @@ def main():
             stars.update({key: {}})
             for attr in attributes:
                 stars[key].update({attr: [getattr(model, attr)]})
-            logging.info("new key '%s' added to stars dict", key)
-            logging.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+            LOGGER.info("new key '%s' added to stars dict", key)
+            LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
         else:
             for attr in attributes:
                 stars[key][attr].append(getattr(model, attr))
-            logging.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+            LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
 #    for key, value in stars.items():
     plt.plot("R", "M", data=stars["[0.]"])
@@ -55,17 +56,22 @@ if __name__ == "__main__":
         default=3,
         help="the verbosity from 0 (quiet) to 4 (debug logs), default to 3"
     )
+
     ARGS = parser.parse_args()
+    LOGGER = logging.getLogger("app")
 
     if ARGS is None:
         logging.critical("Arg parsing failed, exiting...")
+        exit(1)
+    elif LOGGER is None:
+        logging.critical("Logger setup failed, exiting...")
         exit(1)
 
     if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
         logging.warning("'%s' isn't a directory path, use working directory")
 
     level = (5 - ARGS.verbose)*10
-    logging.getLogger().setLevel(level)
+    LOGGER.setLevel(level)
 
     try:
         main()
