@@ -41,9 +41,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--verbose",
         "-v",
-        choice=[0,1,2,3,4],
+        type=int,
+        choices=[0,1,2,3,4],
         default=3,
-        help="the verbosity from 0 (quiet) to 4 (debug logs)"
+        help="the verbosity from 0 (quiet) to 4 (debug logs), default to 3"
     )
     ARGS = parser.parse_args()
 
@@ -53,6 +54,9 @@ if __name__ == "__main__":
 
     if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
         logging.warning("'%s' isn't a directory path, use working directory")
+
+    level = (5 - ARGS.verbose)*10
+    logging.getLogger().setLevel(level)
 
     try:
         main()
