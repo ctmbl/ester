@@ -10,6 +10,19 @@ import ester
 ARGS = None
 LOGGER = None
 
+def plot_R_fM(stars):
+    STYLES = iter(["bx", "rx"])
+
+    fig, ax = plt.subplots()
+    plt.xlabel("M/M_sun")
+    plt.ylabel("R/R_sun")
+
+    for key, value in stars.items():
+        try:
+            ax.plot("M", "R", next(STYLES), data=stars[key], label=key)
+        except StopIteration:
+            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+
 def main():
     # list files in the chosen folder
     files = os.listdir(ARGS.folder)
@@ -17,38 +30,34 @@ def main():
     models_paths = [os.path.join(ARGS.folder, f) for f in files if re.search(".h5$", f) is not None]
 
     stars = {}
+    # the list of attributes to extract from each 1D model
     attributes = ["M", "R", "test_virial", "test_energy"]
     for path in models_paths:
         model = ester.star1d(path)
         LOGGER.debug("parsing model file at path '%s'", path)
         key = str(model.Z[0])
+
         if not key in stars:
-            # key : {"M": [model.M], "R": [model.R], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
+            # TEMPLATE:  {key : {"M": [model.M], "R": [model.R], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}}
             stars.update({key: {}})
+
             for attr in attributes:
                 stars[key].update({attr: [getattr(model, attr)]})
+
             LOGGER.info("new key '%s' added to stars dict", key)
             LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
         else:
             for attr in attributes:
                 stars[key][attr].append(getattr(model, attr))
+
             LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
+    # Normalize values on sun parameters
     for key in stars:
         stars[key]['M'] = list(map(lambda x: x/ester.M_SUN, stars[key]['M']))
         stars[key]['R'] = list(map(lambda x: x/ester.R_SUN, stars[key]['R']))
 
-    STYLES = iter(["bx", "rx"])
-
-    RM_fig, RM_axes = plt.subplots()
-    plt.xlabel("M/M_sun")
-    plt.ylabel("R/R_sun")
-
-    for key, value in stars.items():
-        try:
-            RM_axes.plot("M", "R", next(STYLES), data=stars[key], label=key)
-        except StopIteration:
-            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+    plot_R_fM(stars)
 
     plt.legend()
     plt.show()
