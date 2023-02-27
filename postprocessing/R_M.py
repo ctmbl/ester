@@ -3,7 +3,7 @@
 # separating curves in terms of Z
 
 import os, re, argparse, logging
-from matplotlib.pyplot import plot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import ester
 
@@ -16,17 +16,26 @@ def main():
     models_paths = [os.path.join(ARGS.folder, f) for f in files if re.search(".h5$", f) is not None]
 
     stars = {}
+    attributes = ["M", "R", "test_virial", "test_energy"]
     for path in models_paths:
         model = ester.star1d(path)
         key = str(model.Z[0])
         if not key in stars:
-            stars.update({key : np.array([model.M, model.R])})
+            # key : {"M": [model.M], "R": [model.R], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
+            stars.update({key: {}})
+            for attr in attributes:
+                stars[key].update({attr: [getattr(model, attr)]})
             logging.info("new key '%s' added to stars dict", key)
-            logging.debug("new value 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+            logging.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
         else:
-            stars[key] = np.append(stars[key], [model.M,model.R])
-            logging.debug("new value 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
-    print(stars)
+            for attr in attributes:
+                stars[key][attr].append(getattr(model, attr))
+            logging.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+
+#    for key, value in stars.items():
+    plt.plot("R", "M", data=stars["[0.]"])
+
+    plt.show()
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s [%(levelname)s]: %(message)s", level=logging.INFO)
