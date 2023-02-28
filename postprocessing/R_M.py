@@ -20,25 +20,29 @@ def plot_R_fM(stars, ax):
 
     for key, value in stars.items():
         try:
-            ax.plot("M", "R", next(STYLES), data=stars[key], label=key, color=color)
+            ax.plot("M", "R", next(STYLES), data=stars[key], label=f"{key} Radius", color=color)
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+
+    ax.legend(loc='best')
 
 def plot_tests_fM(stars, ax):
     color = "green"
     STYLES = iter(["+", "x"])
     
     ax.tick_params(axis='y', labelcolor=color)
-    ax.set_ylabel("tests")
+    ax.set_ylabel("|test_virial|")
     ax.set_yscale("log")
 
     for key, value in stars.items():
         try:
-            ax.plot("M", "test_virial", next(STYLES), data=stars[key], label=key, color=color)
+            LOGGER.debug("plotting test_virial=f(M,Z=%s) : \nM: %s\ntest_virial: %s", key, stars[key]["M"], stars[key]["test_virial"])
+            ax.plot("M", "test_virial", next(STYLES), data=stars[key], label=f"{key} test_virial", color=color)
             #ax.plot("M", "test_energy", next(STYLES), data=stars[key], label=key, color=color)
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
 
+    ax.legend(loc='upper right')
 
 def main():
     # list files in the chosen folder
@@ -71,21 +75,18 @@ def main():
             LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
     # Normalize values on sun parameters
+    # Pass test_* to absolute values (to be displayed on log scale)
     for key in stars:
         stars[key]['M'] = list(map(lambda x: x/ester.M_SUN, stars[key]['M']))
         stars[key]['R'] = list(map(lambda x: x/ester.R_SUN, stars[key]['R']))
+        stars[key]['test_virial'] = list(map(lambda x: abs(x), stars[key]['test_virial']))
+        stars[key]['test_energy'] = list(map(lambda x: abs(x), stars[key]['test_energy']))
 
     fig, ax1 = plt.subplots()
-
     plot_R_fM(stars, ax1)
     ax2 = ax1.twinx()
-    #plot_tests_fM(stars, ax2)
-    STYLES = iter(["g+", "gx"])
+    plot_tests_fM(stars, ax2)
     
-    for key in stars:
-        ax2.plot("M", "test_virial", next(STYLES), data=stars[key], label=key)
-    
-    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
