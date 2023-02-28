@@ -28,6 +28,7 @@ def main():
     files = os.listdir(ARGS.folder)
     # create a list of path (prepend ARGS.folder to files) of h5 files (regexp)
     models_paths = [os.path.join(ARGS.folder, f) for f in files if re.search(".h5$", f) is not None]
+    LOGGER.debug("Found %s models: [%s]", len(models_paths), models_paths)
 
     stars = {}
     # the list of attributes to extract from each 1D model
