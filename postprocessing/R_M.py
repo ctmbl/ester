@@ -23,6 +23,22 @@ def plot_R_fM(stars):
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
 
+def plot_tests_fM(stars, ax):
+    color = "green"
+    STYLES = iter(["+", "x"])
+    
+    ax.tick_params(axis='y', labelcolor=color)
+    ax.set_ylabel("tests")
+    ax.set_yscale("log")
+
+    for key, value in stars.items():
+        try:
+            ax.plot("M", "test_virial", next(STYLES), data=stars[key], label=key, color=color)
+            #ax.plot("M", "test_energy", next(STYLES), data=stars[key], label=key, color=color)
+        except StopIteration:
+            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+
+
 def main():
     # list files in the chosen folder
     files = os.listdir(ARGS.folder)
