@@ -10,16 +10,17 @@ import ester
 ARGS = None
 LOGGER = None
 
-def plot_R_fM(stars):
-    STYLES = iter(["bx", "rx"])
+def plot_R_fM(stars, ax):
+    color = "red"
+    STYLES = iter(["+", "x"])
 
-    fig, ax = plt.subplots()
-    plt.xlabel("M/M_sun")
-    plt.ylabel("R/R_sun")
+    ax.tick_params(axis='y', labelcolor=color)
+    ax.set_xlabel("M/M_sun")
+    ax.set_ylabel("R/R_sun")
 
     for key, value in stars.items():
         try:
-            ax.plot("M", "R", next(STYLES), data=stars[key], label=key)
+            ax.plot("M", "R", next(STYLES), data=stars[key], label=key, color=color)
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
 
@@ -74,8 +75,16 @@ def main():
         stars[key]['M'] = list(map(lambda x: x/ester.M_SUN, stars[key]['M']))
         stars[key]['R'] = list(map(lambda x: x/ester.R_SUN, stars[key]['R']))
 
-    plot_R_fM(stars)
+    fig, ax1 = plt.subplots()
 
+    plot_R_fM(stars, ax1)
+    ax2 = ax1.twinx()
+    #plot_tests_fM(stars, ax2)
+    STYLES = iter(["g+", "gx"])
+    
+    for key in stars:
+        ax2.plot("M", "test_virial", next(STYLES), data=stars[key], label=key)
+    
     plt.legend()
     plt.show()
 
