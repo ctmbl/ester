@@ -55,6 +55,10 @@ def main():
     # the list of attributes to extract from each 1D model
     attributes = ["M", "R", "test_virial", "test_energy"]
     for path in models_paths:
+        if re.search("2d", path) is not None:
+            LOGGER.warning("Ignore %s, seems to be 2D model", path)
+            continue
+
         model = ester.star1d(path)
         LOGGER.debug("parsing model file at path '%s'", path)
         key = str(model.Z[0])
