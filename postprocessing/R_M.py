@@ -94,6 +94,12 @@ def main():
 
             LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
+    if ARGS.print:
+        print("stars:", stars)
+        print("M:", M)
+        print("R:", R)
+        print("Z:", Z)
+
     # Normalize values on sun parameters
     # Pass test_* to absolute values (to be displayed on log scale)
     for key in stars:
@@ -126,6 +132,12 @@ if __name__ == "__main__":
         choices=[0,1,2,3,4],
         default=3,
         help="the verbosity from 0 (quiet) to 4 (debug logs), default to 3"
+    )
+    parser.add_argument(
+        "--print",
+        "-p",
+        action="store_true",
+        help="if used, print to stdout the stars dict and M, R and Z lists, ignores verbosity"
     )
 
     ARGS = parser.parse_args()
