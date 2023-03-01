@@ -107,11 +107,20 @@ def main():
         stars[key]['test_virial'] = list(map(lambda x: abs(x), stars[key]['test_virial']))
         stars[key]['test_energy'] = list(map(lambda x: abs(x), stars[key]['test_energy']))
 
-    fig, ax1 = plt.subplots()
-    plot_R_fM(stars, ax1)
-    ax2 = ax1.twinx()
-    plot_tests_fM(stars, ax2)
-    
+    fig = plt.figure()
+    if ARGS.scatterplot:
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(M, Z, R, marker='^')
+
+        ax.set_xlabel('M/M_SUN')
+        ax.set_zlabel('R/R_SUN')
+        ax.set_ylabel('log(Z)')
+    else:
+        ax = fig.add_subplot()
+        plot_R_fM(stars, ax)
+        ax = ax.twinx()
+        plot_tests_fM(stars, ax)
+
     plt.show()
 
 if __name__ == "__main__":
@@ -137,6 +146,13 @@ if __name__ == "__main__":
         "-p",
         action="store_true",
         help="if used, print to stdout the stars dict and M, R and Z lists, ignores verbosity"
+    )
+    parser.add_argument(
+        "--3d",
+        "-3",
+        dest="scatterplot",
+        action="store_true",
+        help="plot a 3D scatter plot of R, M and log(Z) instead of R=f(M,Z) 2D curves"
     )
 
     ARGS = parser.parse_args()
