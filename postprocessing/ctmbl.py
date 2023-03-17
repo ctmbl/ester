@@ -24,7 +24,7 @@ def plot_R_fM(stars, ax):
 
     for key, value in stars.items():
         try:
-            if len(stars[key]):
+            if len(stars[key]) == 0:
                 LOGGER.error("Can't display stars[%s], empty", key)
                 exit(1)
             ax.plot("M", "R", next(STYLES), data=stars[key], label=f"{key} Radius", color=color)
