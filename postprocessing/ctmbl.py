@@ -104,11 +104,23 @@ def yield_model(models_paths):
         LOGGER.info("parsing model file at path '%s'", path)
         yield is_model_2d, model
 
-def main():
+def get_models_paths(folder):
     # list files in the chosen folder
-    files = os.listdir(ARGS.folder)
+    files = [os.path.join(folder, f) for f in os.listdir(folder)]
     # create a list of path (prepend ARGS.folder to files) of h5 files (regexp)
-    models_paths = [os.path.join(ARGS.folder, f) for f in files if re.search(".h5$", f) is not None]
+
+    models_paths = []
+    for f in files:
+        if re.search(".h5$", f) is not None:
+            models_paths.append(f)
+        elif os.path.isdir(f) and ARGS.recursive:
+            models_paths.extend(get_models_paths(f))
+
+    return models_paths
+
+def main():
+    # get models paths
+    models_paths = get_models_paths(ARGS.folder)
     LOGGER.debug("Found %s models: [%s]", len(models_paths), models_paths)
 
     stars = {}
@@ -188,6 +200,12 @@ if __name__ == "__main__":
         default=["M","R","Omega_bk"],
         type=lambda s: s.split(','),
         help=f"which parameter to plot in {ATTRIBUTES}, comma separated, between 2 and 3"
+    )
+    parser.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="if used, look recursively in the folders to find models"
     )
 
     # Global variables
