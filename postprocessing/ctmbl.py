@@ -44,6 +44,13 @@ def plot_tests_fM(stars, ax):
 
     ax.legend(loc='upper right')
 
+def plot_scatterplot3D(ax, M, Z, Omega_bk):
+    ax.scatter(M, Z, Omega_bk, marker='^')
+
+    ax.set_xlabel('M/M_SUN')
+    ax.set_zlabel('Omega_bk')
+    ax.set_ylabel('log(Z)')
+
 def main():
     # list files in the chosen folder
     files = os.listdir(ARGS.folder)
@@ -55,6 +62,7 @@ def main():
     Z = []
     M = []
     R = []
+    Omega_bk = []
 
     if len(models_paths) == 0:
         LOGGER.warning("No models found in this directory, using older values for M, R and Z lists")
@@ -62,24 +70,38 @@ def main():
         R = [8.843585329375681, 14.871262089642036, 2.3090136110854886, 4.526973611488149, 9.632180929023002, 6.012094606363337, 7.813408191898322, 15.45683756197053, 18.062580453553284, 10.785581228983071, 14.364725459330586, 7.162419393783571, 7.581795592829309, 13.244651308204029, 5.716273567471856, 6.477795175955188, 5.819360439402384, 17.372822448972247, 4.988455877157205, 1.9673256954307219, 7.401872764673879, 11.967125586166132, 4.645888428459556, 13.89967742425352, 5.621196100925406, 10.602703970436735, 8.71142172412895, 15.151768537421278, 14.645267117761248, 8.441334680802003, 10.20547862478921, 5.206412573143348, 4.762336331635683, 3.8790920419525956, 5.500563611332647, 9.624312582848573, 4.405385580909005, 6.469523604020436, 4.641764190345712, 8.168506696604064, 5.417083650276054, 9.036158053522982, 6.561911792819359, 16.351169543353627, 14.611114013702156, 1.601472461918693, 8.434832714552725, 14.128027878607494, 11.857344020760985, 13.029348829861226, 4.870924002783196, 7.60117721446439, 13.460523335325668, 3.170979364409926, 13.226894887509095, 11.251402255618034, 10.309525560516645, 2.6196008359296346, 13.909225070590054, 8.677365914485128]
         Z = [-4.000000000000048, -1.7447274948966935, -1.6989700043360183, -8.301029993481755, -3.4559319556497035, -8.301029993481755, -1.6989700043360183, -1.6989700043360183, -1.6989700043360183, -1.6989700043360183, -1.7958800173440748, -1.6989700043360183, -4.999999999999566, -1.9586073148417746, -1.6989700043360183, -6.00000000001162, -8.301029993481755, -1.6989700043360183, -8.301029993481755, -1.6989700043360183, -8.301029993481755, -1.6989700043360183, -8.301029993481755, -1.8538719643217616, -8.301029993481755, -2.8860566476931555, -4.096910013007923, -1.7212463990471707, -1.6989700043360183, -4.301029995664029, -1.6989700043360183, -8.301029993481755, -8.301029993481755, -1.6989700043360183, -6.999999999987511, -1.6989700043360183, -8.301029993481755, -1.6989700043360183, -8.000000000228594, -8.301029993481755, -8.301029993481755, -1.6989700043360183, -8.301029993481755, -1.6989700043360183, -1.7695510786217257, -1.6989700043360183, -1.6989700043360183, -1.8239087409443184, -2.3279021420642843, -1.9999999999999996, -1.6989700043360183, -8.698970004564613, -1.920818753952375, -1.6989700043360183, -1.6989700043360183, -2.5686362358410157, -3.0457574905606695, -1.6989700043360183, -1.6989700043360183, -1.6989700043360183]
 
-    # the list of attributes to extract from each 1D model
-    attributes = ["M", "R", "test_virial", "test_energy"]
+    # the list of attributes to extract from each model
+    attributes = ["M", "R", "Omega_bk", "test_virial", "test_energy"]
     for path in models_paths:
-        if re.search("2d|w", path) is not None:
-            LOGGER.warning("Ignore %s, seems to be 2D model", path)
-            continue
+        model_2d = re.search("2d|w", path) is not None
+        if model_2d:
+            if ARGS.print_2d_stars:
+                model = ester.star2d(path)
+            else:
+                LOGGER.warning("Ignore %s, seems to be 1D model", path)
+                continue
+        else:
+            if ARGS.print_2d_stars:
+                LOGGER.warning("Ignore %s, seems to be 2D model", path)
+                continue
+            else:
+                model = ester.star1d(path)
 
-        model = ester.star1d(path)
         LOGGER.debug("parsing model file at path '%s'", path)
-        key = str(model.Z[0])
 
-        if model.Z[0] != 0:
-            Z.append(float(np.log10(model.Z[0])))
+        key = str(model.Z[0][0]) if model_2d else str(model.Z[0])
+
+        if model.Z.all():
+            if model_2d:
+                Z.append(float(np.log10(model.Z[0][0])))
+            else:
+                Z.append(float(np.log10(model.Z[0])))
             M.append(model.M/ester.M_SUN)
             R.append(model.R/ester.R_SUN)
+            Omega_bk.append(model.Omega_bk)
 
         if not key in stars:
-            # TEMPLATE:  {key : {"M": [model.M], "R": [model.R], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}}
+            # TEMPLATE:  {key : {"M": [model.M], "R": [model.R], "Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}}
             stars.update({key: {}})
 
             for attr in attributes:
@@ -110,11 +132,7 @@ def main():
     fig = plt.figure()
     if ARGS.scatterplot:
         ax = fig.add_subplot(projection='3d')
-        ax.scatter(M, Z, R, marker='^')
-
-        ax.set_xlabel('M/M_SUN')
-        ax.set_zlabel('R/R_SUN')
-        ax.set_ylabel('log(Z)')
+        plot_scatterplot3D(ax, M, Z, Omega_bk)
     else:
         ax = fig.add_subplot()
         plot_R_fM(stars, ax)
@@ -153,6 +171,13 @@ if __name__ == "__main__":
         dest="scatterplot",
         action="store_true",
         help="plot a 3D scatter plot of R, M and log(Z) instead of R=f(M,Z) 2D curves"
+    )
+    parser.add_argument(
+        "--2d",
+        "-2",
+        dest="print_2d_stars",
+        action="store_true",
+        help="look for 2D model stars instead of 1D models"
     )
 
     ARGS = parser.parse_args()
