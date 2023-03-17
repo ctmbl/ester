@@ -10,21 +10,27 @@ import ester
 
 ARGS = None
 LOGGER = None
+# the list of attributes to extract from each model
+ATTRIBUTES = ["M", "R", "Z", "Omega_bk", "test_virial", "test_energy"]
 
 def plot_scatterplot2D(ax, stars):
     if len(stars) == 0:
         LOGGER.error("Nothing to display, stars' empty")
         exit(1)
 
+    X = ARGS.plot[0]
+    Y = ARGS.plot[1]
+    C = ARGS.plot[2]
+
     norm=plt.Normalize(0,1)
     cmap = colors.LinearSegmentedColormap.from_list("my_rainbow", ["purple", "cyan", "blue", "green", "yellow", "red"], 256)
 
-    ax.set_xlabel("M/M_sun")
-    ax.set_ylabel("R/R_sun")
+    ax.set_xlabel(X)
+    ax.set_ylabel(Y)
 
     LOGGER.info("Display stars")
 
-    return ax.scatter(stars['M'], stars['R'], c=stars['Omega_bk'], data=stars, cmap=cmap, norm=norm)
+    return ax.scatter(stars[X], stars[Y], c=stars[C], data=stars, cmap=cmap, norm=norm)
 
 # obsolete:
 def plot_tests_fM(stars, ax):
@@ -47,11 +53,15 @@ def plot_tests_fM(stars, ax):
     ax.legend(loc='upper right')
 
 def plot_scatterplot3D(ax, stars):
-    ax.scatter(stars['M'], stars['Z'], stars['Omega_bk'], marker='^')
+    X = ARGS.plot[0]
+    Y = ARGS.plot[1]
+    Z = ARGS.plot[2]
 
-    ax.set_xlabel('M/M_SUN')
-    ax.set_zlabel('Omega_bk')
-    ax.set_ylabel('log(Z)')
+    ax.scatter(stars[X], stars[Y], stars[Z], marker='^')
+
+    ax.set_xlabel(X)
+    ax.set_zlabel(Z)
+    ax.set_ylabel(Y)
 
 def plot_it(stars):
     fig = plt.figure()
@@ -66,7 +76,7 @@ def plot_it(stars):
         #ax = ax.twinx()
         #plot_tests_fM(ax, stars)
 
-        cbar = fig.colorbar(sc, ax=ax, label='Omega_bk')
+        cbar = fig.colorbar(sc, ax=ax, label=ARGS.plot[2])
 
     plt.show()
 
@@ -103,11 +113,8 @@ def main():
 
     stars = {}
 
-    # the list of attributes to extract from each model
-    attributes = ["M", "R", "Z", "Omega_bk", "test_virial", "test_energy"]
-
     # stars initialization
-    for attr in attributes:
+    for attr in ATTRIBUTES:
         stars.update({attr: []})
 
     if len(models_paths) == 0:
@@ -117,7 +124,7 @@ def main():
     # stars filling
     for is_model_2d, model in yield_model(models_paths):
         # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
-        for attr in attributes:
+        for attr in ATTRIBUTES:
             if attr == "Z":
                 stars[attr].append(getattr(model, attr)[0][0])
                 continue
@@ -176,10 +183,18 @@ if __name__ == "__main__":
         dest="ester",
         help="dimension of the model to plot (1D or 2D), default to 1"
     )
+    parser.add_argument(
+        "--plot",
+        default=["M","R","Omega_bk"],
+        type=lambda s: s.split(','),
+        help=f"which parameter to plot in {ATTRIBUTES}, comma separated, between 2 and 3"
+    )
 
+    # Global variables
     ARGS = parser.parse_args()
     LOGGER = logging.getLogger("app")
 
+    # Validation
     if ARGS is None:
         logging.critical("Arg parsing failed, exiting...")
         exit(1)
@@ -189,9 +204,16 @@ if __name__ == "__main__":
 
     if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
         logging.warning("'%s' isn't a directory path, use working directory")
-
+    if len(ARGS.plot) != 3:
+        logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
+        exit(1)
+    for attr in ARGS.plot:
+        if attr not in ATTRIBUTES:
+            logging.critical("'%s' is an unknown attributes, please choose only one of %s", attr, ATTRIBUTES)
+            exit(1)
     logging.info("Will look for %dD ESTER models", ARGS.ester)
 
+    # LOGGER setup
     level = (5 - ARGS.verbose)*10
     LOGGER.setLevel(level)
 
