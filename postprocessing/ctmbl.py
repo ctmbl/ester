@@ -62,7 +62,7 @@ def plot_scatterplot3D(ax, stars):
     ax.set_zlabel('Omega_bk')
     ax.set_ylabel('log(Z)')
 
-def plot_it(stars, M, Z, R, Omega_bk):
+def plot_it(stars):
     fig = plt.figure()
     if ARGS.scatterplot:
         ax = fig.add_subplot(projection='3d')
@@ -83,10 +83,6 @@ def main():
     LOGGER.debug("Found %s models: [%s]", len(models_paths), models_paths)
 
     stars = {}
-    Z = []
-    M = []
-    R = []
-    Omega_bk = []
 
     if len(models_paths) == 0:
         LOGGER.warning("No models found in this directory, using older values for M, R and Z lists")
@@ -128,10 +124,6 @@ def main():
 
     if ARGS.print:
         print("stars:", stars)
-        print("M:", M)
-        print("R:", R)
-        print("Z:", Z)
-        print("Omega_bk:", Omega_bk)
 
     # Normalize values on sun parameters
     # Pass test_* to absolute values (to be displayed on log scale)
@@ -140,7 +132,7 @@ def main():
     stars['test_virial'] = list(map(lambda x: abs(x), stars['test_virial']))
     stars['test_energy'] = list(map(lambda x: abs(x), stars['test_energy']))
 
-    plot_it(stars, M, Z, R, Omega_bk)
+    plot_it(stars)
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s [%(levelname)s]: %(message)s", level=logging.INFO)
