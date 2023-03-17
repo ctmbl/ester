@@ -119,8 +119,11 @@ def main():
 
         # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
         for attr in attributes:
+            if attr == "Z":
+                stars[attr].append(getattr(model, attr)[0][0])
+                continue
             stars[attr].append(getattr(model, attr))
-        LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+        LOGGER.debug("new values 'M: %s, R:%s, Z:%s, Omega_bk:%s' added", float(model.M), float(model.R), float(model.Z[0][0]), float(model.Omega_bk))
 
     if ARGS.print:
         print("stars:", stars)
