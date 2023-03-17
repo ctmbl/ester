@@ -203,7 +203,8 @@ if __name__ == "__main__":
         exit(1)
 
     if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
-        logging.warning("'%s' isn't a directory path, use working directory")
+        logging.critical("'%s' isn't a path to a folder", ARGS.folder)
+        exit(1)
     if len(ARGS.plot) != 3:
         logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
         exit(1)
