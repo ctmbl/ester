@@ -32,6 +32,7 @@ def plot_R_fM(stars, ax):
 
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+            break
 
     ax.legend(loc='best')
 
@@ -49,7 +50,8 @@ def plot_tests_fM(stars, ax):
             ax.plot("M", "test_virial", next(STYLES), data=stars[key], label=f"{key} test_virial", color=color)
             #ax.plot("M", "test_energy", next(STYLES), data=stars[key], label=key, color=color)
         except StopIteration:
-            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
+            LOGGER.error("Not enough STYLES to plot each set of tests, stopped at key '%s'", key)
+            break
 
     ax.legend(loc='upper right')
 
