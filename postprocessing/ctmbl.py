@@ -11,7 +11,8 @@ import ester
 ARGS = None
 LOGGER = None
 # the list of attributes to extract from each model
-ATTRIBUTES = ["M", "R", "Z", "Tc", "Omega_bk", "test_virial", "test_energy"]
+ATTRIBUTES = ["M", "R", "Z", "Tc", "X", "ndomains", "eos", "Omega_bk", "test_virial", "test_energy"]
+ARRAYS_ATTR = ["Z", "X"]
 
 def plot_scatterplot2D(ax, stars):
     if len(stars) == 0:
@@ -137,7 +138,7 @@ def main():
     for is_model_2d, model in yield_model(models_paths):
         # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
         for attr in ATTRIBUTES:
-            if attr == "Z":
+            if attr in ARRAYS_ATTR:
                 stars[attr].append(getattr(model, attr)[0][0])
                 continue
             stars[attr].append(getattr(model, attr))
