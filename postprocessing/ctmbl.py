@@ -75,6 +75,27 @@ def plot_it(stars):
 
     plt.show()
 
+def yield_model(models_paths):
+
+    for path in models_paths:
+        is_model_2d = re.search("2d|w", path) is not None
+
+        if is_model_2d:
+            if ARGS.print_2d_stars:
+                model = ester.star2d(path)
+            else:
+                LOGGER.warning("Ignore %s, seems to be 2D model", path)
+                continue
+        else:
+            if ARGS.print_2d_stars:
+                LOGGER.warning("Ignore %s, seems to be 1D model", path)
+                continue
+            else:
+                model = ester.star1d(path)
+
+        LOGGER.info("parsing model file at path '%s'", path)
+        yield is_model_2d, model
+
 def main():
     # list files in the chosen folder
     files = os.listdir(ARGS.folder)
@@ -96,22 +117,7 @@ def main():
         stars = {'M': [5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35, 5.9673e+35], 'R': [537657731047.3633, 538362543399.5326, 531023176242.3185, 528667956215.7965, 539041309219.3218, 542789112936.22253, 532686918944.3331, 531910984129.35675, 529017952555.08997, 535771357789.99286, 539773843550.49084, 533255814274.48834, 540945868383.56226, 530130137844.09235], 'Z': [1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09, 1.9999999989472875e-09], 'Omega_bk': [0.42, 0.44, 0.25, 0.0, 0.46, 0.54, 0.32, 0.29, 0.1, 0.38, 0.48, 0.34, 0.51, 0.2], 'test_virial': [-4.4069659033141306e-10, -6.846696543050257e-10, -2.543454336034756e-11, 2.947120325558217e-11, -8.155138786491989e-10, -2.5587931773429773e-10, -7.99460497802329e-11, 9.27606880196663e-11, -1.7458257062230587e-11, -1.0702017050334689e-10, -1.1687579792862834e-09, -2.017430666967357e-11, -1.0131129268842187e-09, -3.541145154883907e-11], 'test_energy': [4.540967454914486e-06, 1.4889536484881958e-05, 1.0650544735957296e-06, 8.519671804101867e-08, -4.002785322500465e-05, 0.00038627494832817226, 3.587649685558525e-06, -2.3694929111380636e-06, 5.482976060145386e-07, 1.4061019751383358e-06, 5.053838745262048e-05, -4.613880845037216e-06, 0.0003312559829097926, 1.858352061792795e-06]}
 
     # stars filling
-    for path in models_paths:
-        model_2d = re.search("2d|w", path) is not None
-        if model_2d:
-            if ARGS.print_2d_stars:
-                model = ester.star2d(path)
-            else:
-                LOGGER.warning("Ignore %s, seems to be 2D model", path)
-                continue
-        else:
-            if ARGS.print_2d_stars:
-                LOGGER.warning("Ignore %s, seems to be 1D model", path)
-                continue
-            else:
-                model = ester.star1d(path)
-        LOGGER.debug("parsing model file at path '%s'", path)
-
+    for is_model_2d, model in yield_model(models_paths):
         # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
         for attr in attributes:
             if attr == "Z":
