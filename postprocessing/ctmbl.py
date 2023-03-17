@@ -55,8 +55,8 @@ def plot_tests_fM(stars, ax):
 
     ax.legend(loc='upper right')
 
-def plot_scatterplot3D(ax, M, Z, Omega_bk):
-    ax.scatter(M, Z, Omega_bk, marker='^')
+def plot_scatterplot3D(ax, stars):
+    ax.scatter(stars['M'], stars['Z'], stars['Omega_bk'], marker='^')
 
     ax.set_xlabel('M/M_SUN')
     ax.set_zlabel('Omega_bk')
@@ -66,7 +66,7 @@ def plot_it(stars, M, Z, R, Omega_bk):
     fig = plt.figure()
     if ARGS.scatterplot:
         ax = fig.add_subplot(projection='3d')
-        plot_scatterplot3D(ax, M, Z, Omega_bk)
+        plot_scatterplot3D(ax, stars)
     else:
         ax = fig.add_subplot()
         plot_R_fM(stars, ax)
