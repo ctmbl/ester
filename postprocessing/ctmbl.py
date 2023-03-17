@@ -62,6 +62,19 @@ def plot_scatterplot3D(ax, M, Z, Omega_bk):
     ax.set_zlabel('Omega_bk')
     ax.set_ylabel('log(Z)')
 
+def plot_it(stars, M, Z, R, Omega_bk):
+    fig = plt.figure()
+    if ARGS.scatterplot:
+        ax = fig.add_subplot(projection='3d')
+        plot_scatterplot3D(ax, M, Z, Omega_bk)
+    else:
+        ax = fig.add_subplot()
+        plot_R_fM(stars, ax)
+        ax = ax.twinx()
+        plot_tests_fM(stars, ax)
+
+    plt.show()
+
 def main():
     # list files in the chosen folder
     files = os.listdir(ARGS.folder)
@@ -144,17 +157,7 @@ def main():
         stars[key]['test_virial'] = list(map(lambda x: abs(x), stars[key]['test_virial']))
         stars[key]['test_energy'] = list(map(lambda x: abs(x), stars[key]['test_energy']))
 
-    fig = plt.figure()
-    if ARGS.scatterplot:
-        ax = fig.add_subplot(projection='3d')
-        plot_scatterplot3D(ax, M, Z, Omega_bk)
-    else:
-        ax = fig.add_subplot()
-        plot_R_fM(stars, ax)
-        ax = ax.twinx()
-        plot_tests_fM(stars, ax)
-
-    plt.show()
+    plot_it(stars, M, Z, R, Omega_bk)
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s [%(levelname)s]: %(message)s", level=logging.INFO)
