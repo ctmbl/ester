@@ -98,7 +98,7 @@ def main():
 
         LOGGER.debug("parsing model file at path '%s'", path)
 
-        key = str(model.Z[0][0]) if model_2d else str(model.Z[0])
+        key = str(model.Z[0][0])
 
         if model.Z.all():
             if model_2d:
