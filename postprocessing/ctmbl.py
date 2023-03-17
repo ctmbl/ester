@@ -98,7 +98,13 @@ def main():
         LOGGER.info("These are 2d/m300/1st_gen values")
 
     # the list of attributes to extract from each model
-    attributes = ["M", "R", "Omega_bk", "test_virial", "test_energy"]
+    attributes = ["M", "R", "Z", "Omega_bk", "test_virial", "test_energy"]
+
+    # stars initialization
+    for attr in attributes:
+        stars.update({attr: []})
+
+    # stars filling
     for path in models_paths:
         model_2d = re.search("2d|w", path) is not None
         if model_2d:
@@ -113,34 +119,12 @@ def main():
                 continue
             else:
                 model = ester.star1d(path)
-
         LOGGER.debug("parsing model file at path '%s'", path)
 
-        key = str(model.Z[0][0])
-
-        if model.Z.all():
-            if model_2d:
-                Z.append(float(np.log10(model.Z[0][0])))
-            else:
-                Z.append(float(np.log10(model.Z[0])))
-            M.append(model.M/ester.M_SUN)
-            R.append(model.R/ester.R_SUN)
-            Omega_bk.append(model.Omega_bk)
-
-        if not key in stars:
-            # TEMPLATE:  {key : {"M": [model.M], "R": [model.R], "Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}}
-            stars.update({key: {}})
-
-            for attr in attributes:
-                stars[key].update({attr: [getattr(model, attr)]})
-
-            LOGGER.info("new key '%s' added to stars dict", key)
-            LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
-        else:
-            for attr in attributes:
-                stars[key][attr].append(getattr(model, attr))
-
-            LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
+        # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
+        for attr in attributes:
+            stars[attr].append(getattr(model, attr))
+        LOGGER.debug("new values 'M: %s, R:%s' added to stars dict at key '%s'", float(model.M), float(model.R), key)
 
     if ARGS.print:
         print("stars:", stars)
@@ -151,11 +135,10 @@ def main():
 
     # Normalize values on sun parameters
     # Pass test_* to absolute values (to be displayed on log scale)
-    for key in stars:
-        stars[key]['M'] = list(map(lambda x: x/ester.M_SUN, stars[key]['M']))
-        stars[key]['R'] = list(map(lambda x: x/ester.R_SUN, stars[key]['R']))
-        stars[key]['test_virial'] = list(map(lambda x: abs(x), stars[key]['test_virial']))
-        stars[key]['test_energy'] = list(map(lambda x: abs(x), stars[key]['test_energy']))
+    stars['M'] = list(map(lambda x: x/ester.M_SUN, stars['M']))
+    stars['R'] = list(map(lambda x: x/ester.R_SUN, stars['R']))
+    stars['test_virial'] = list(map(lambda x: abs(x), stars['test_virial']))
+    stars['test_energy'] = list(map(lambda x: abs(x), stars['test_energy']))
 
     plot_it(stars, M, Z, R, Omega_bk)
 
