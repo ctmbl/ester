@@ -75,18 +75,21 @@ def yield_model(models_paths):
     for path in models_paths:
         is_model_2d = re.search("2d|w", path) is not None
 
-        if is_model_2d:
-            if ARGS.print_2d_stars:
-                model = ester.star2d(path)
-            else:
+        if ARGS.ester == 1:
+            if is_model_2d:
                 LOGGER.warning("Ignore %s, seems to be 2D model", path)
-                continue
-        else:
-            if ARGS.print_2d_stars:
-                LOGGER.warning("Ignore %s, seems to be 1D model", path)
                 continue
             else:
                 model = ester.star1d(path)
+        elif ARGS.ester == 2:
+            if is_model_2d:
+                model = ester.star2d(path)
+            else:
+                LOGGER.warning("Ignore %s, seems to be 1D model", path)
+                continue
+        else:
+            logging.critical("Unknown ESTER model dimension: %s", ARGS.ester)
+            exit(1)
 
         LOGGER.info("parsing model file at path '%s'", path)
         yield is_model_2d, model
@@ -158,18 +161,20 @@ if __name__ == "__main__":
         help="if used, print to stdout the stars dict and M, R and Z lists, ignores verbosity"
     )
     parser.add_argument(
-        "--3d",
+        "--scatterplot3d",
         "-3",
         dest="scatterplot3D",
         action="store_true",
         help="plot a 3D scatter plot of R, M and log(Z) instead of R=f(M,Z) 2D curves"
     )
     parser.add_argument(
-        "--2d",
-        "-2",
-        dest="print_2d_stars",
-        action="store_true",
-        help="look for 2D model stars instead of 1D models"
+        "--ester",
+        "-e",
+        type=int,
+        choices=[1,2],
+        default=1,
+        dest="ester",
+        help="dimension of the model to plot (1D or 2D), default to 1"
     )
 
     ARGS = parser.parse_args()
@@ -184,6 +189,8 @@ if __name__ == "__main__":
 
     if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
         logging.warning("'%s' isn't a directory path, use working directory")
+
+    logging.info("Will look for %dD ESTER models", ARGS.ester)
 
     level = (5 - ARGS.verbose)*10
     LOGGER.setLevel(level)
