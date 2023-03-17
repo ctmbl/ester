@@ -4,38 +4,29 @@
 
 import os, re, argparse, logging
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import numpy as np
 import ester
 
 ARGS = None
 LOGGER = None
 
-def plot_R_fM(stars, ax):
+def plot_scatterplot2D(ax, stars):
     if len(stars) == 0:
         LOGGER.error("Nothing to display, stars' empty")
         exit(1)
 
-    color = "red"
-    STYLES = iter(["+", "x"])
+    norm=plt.Normalize(0,1)
+    cmap = colors.LinearSegmentedColormap.from_list("my_rainbow", ["purple", "cyan", "blue", "green", "yellow", "red"], 256)
 
-    ax.tick_params(axis='y', labelcolor=color)
     ax.set_xlabel("M/M_sun")
     ax.set_ylabel("R/R_sun")
 
-    for key, value in stars.items():
-        try:
-            if len(stars[key]) == 0:
-                LOGGER.error("Can't display stars[%s], empty", key)
-                exit(1)
-            ax.plot("M", "R", next(STYLES), data=stars[key], label=f"{key} Radius", color=color)
-            LOGGER.info("Display stars[%s]", key)
+    LOGGER.info("Display stars")
 
-        except StopIteration:
-            LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
-            break
+    return ax.scatter(stars['M'], stars['R'], c=stars['Omega_bk'], data=stars, cmap=cmap, norm=norm)
 
-    ax.legend(loc='best')
-
+# obsolete:
 def plot_tests_fM(stars, ax):
     color = "green"
     STYLES = iter(["+", "x"])
@@ -64,14 +55,18 @@ def plot_scatterplot3D(ax, stars):
 
 def plot_it(stars):
     fig = plt.figure()
-    if ARGS.scatterplot:
+    if ARGS.scatterplot3D:
         ax = fig.add_subplot(projection='3d')
         plot_scatterplot3D(ax, stars)
     else:
         ax = fig.add_subplot()
-        plot_R_fM(stars, ax)
-        ax = ax.twinx()
-        plot_tests_fM(stars, ax)
+        sc = plot_scatterplot2D(ax, stars)
+
+        # test disaply has been deactivated: not updated since `stars` format update
+        #ax = ax.twinx()
+        #plot_tests_fM(ax, stars)
+
+        cbar = fig.colorbar(sc, ax=ax, label='Omega_bk')
 
     plt.show()
 
@@ -165,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--3d",
         "-3",
-        dest="scatterplot",
+        dest="scatterplot3D",
         action="store_true",
         help="plot a 3D scatter plot of R, M and log(Z) instead of R=f(M,Z) 2D curves"
     )
