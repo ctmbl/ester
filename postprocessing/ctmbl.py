@@ -87,11 +87,11 @@ def main():
             if ARGS.print_2d_stars:
                 model = ester.star2d(path)
             else:
-                LOGGER.warning("Ignore %s, seems to be 1D model", path)
+                LOGGER.warning("Ignore %s, seems to be 2D model", path)
                 continue
         else:
             if ARGS.print_2d_stars:
-                LOGGER.warning("Ignore %s, seems to be 2D model", path)
+                LOGGER.warning("Ignore %s, seems to be 1D model", path)
                 continue
             else:
                 model = ester.star1d(path)
