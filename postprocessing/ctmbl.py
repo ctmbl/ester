@@ -11,6 +11,10 @@ ARGS = None
 LOGGER = None
 
 def plot_R_fM(stars, ax):
+    if len(stars) == 0:
+        LOGGER.error("Nothing to display, stars' empty")
+        exit(1)
+
     color = "red"
     STYLES = iter(["+", "x"])
 
@@ -20,7 +24,12 @@ def plot_R_fM(stars, ax):
 
     for key, value in stars.items():
         try:
+            if len(stars[key]):
+                LOGGER.error("Can't display stars[%s], empty", key)
+                exit(1)
             ax.plot("M", "R", next(STYLES), data=stars[key], label=f"{key} Radius", color=color)
+            LOGGER.info("Display stars[%s]", key)
+
         except StopIteration:
             LOGGER.error("Not enough STYLES to plot each set of datas, stopped at key '%s'", key)
 
