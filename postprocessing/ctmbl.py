@@ -11,7 +11,7 @@ import ester
 ARGS = None
 LOGGER = None
 # the list of attributes to extract from each model
-ATTRIBUTES = ["M", "R", "Z", "Omega_bk", "test_virial", "test_energy"]
+ATTRIBUTES = ["M", "R", "Z", "Tc", "Omega_bk", "test_virial", "test_energy"]
 
 def plot_scatterplot2D(ax, stars):
     if len(stars) == 0:
