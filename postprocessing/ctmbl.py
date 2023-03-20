@@ -108,7 +108,7 @@ def yield_model(models_paths):
 def get_models_paths(folder):
     # list files in the chosen folder
     files = [os.path.join(folder, f) for f in os.listdir(folder)]
-    # create a list of path (prepend ARGS.folder to files) of h5 files (regexp)
+    # create a list of path (prepend folder to files) of h5 files (regexp)
 
     models_paths = []
     for f in files:
@@ -121,7 +121,9 @@ def get_models_paths(folder):
 
 def main():
     # get models paths
-    models_paths = get_models_paths(ARGS.folder)
+    models_paths = []
+    for folder in ARGS.folders:
+        models_paths.extend(get_models_paths(folder))
     LOGGER.debug("Found %s models: [%s]", len(models_paths), models_paths)
 
     stars = {}
@@ -161,10 +163,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--folder",
+        "--folders",
         "-f",
         default=".",
         help="the path to the folder containing 1d models",
+        nargs="+",
     )
     parser.add_argument(
         "--verbose",
@@ -221,9 +224,10 @@ if __name__ == "__main__":
         logging.critical("Logger setup failed, exiting...")
         exit(1)
 
-    if not os.path.exists(ARGS.folder) or os.path.isfile(ARGS.folder):
-        logging.critical("'%s' isn't a path to a folder", ARGS.folder)
-        exit(1)
+    for folder in ARGS.folders:
+        if not os.path.exists(folder) or os.path.isfile(folder):
+            logging.critical("'%s' isn't a path to a folder", ARGS.folders)
+            exit(1)
     if len(ARGS.plot) != 3:
         logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
         exit(1)
