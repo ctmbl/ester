@@ -64,8 +64,26 @@ def plot_scatterplot3D(ax, stars):
     ax.set_zlabel(Z)
     ax.set_ylabel(Y)
 
+def filter_it(stars):
+    if ARGS.filter is None:
+        return
+
+    parameter = ARGS.filter[0]
+    value = ARGS.filter[1]
+
+    def delete_at_index(i):
+        for attr in ATTRIBUTES:
+            stars[attr].pop(i)
+
+    for i in range(len(stars[parameter])-1, -1, -1):
+        if str(stars[parameter][i]) == value:
+            delete_at_index(i)
+
 def plot_it(stars):
     fig = plt.figure()
+
+    filter_it(stars)
+
     if ARGS.scatterplot3D:
         ax = fig.add_subplot(projection='3d')
         plot_scatterplot3D(ax, stars)
@@ -214,6 +232,11 @@ if __name__ == "__main__":
         "-r",
         action="store_true",
         help="if used, look recursively in the folders to find models"
+    )
+    parser.add_argument(
+        "--filter",
+        type=lambda s: s.split(','),
+        help="filter out some value, expected as 'parameter,value'"
     )
 
     # Global variables
