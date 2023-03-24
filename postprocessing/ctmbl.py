@@ -69,14 +69,30 @@ def filter_it(stars):
         return
 
     parameter = ARGS.filter[0]
-    value = ARGS.filter[1]
+    filtered_value = ARGS.filter[1]
 
     def delete_at_index(i):
         for attr in ATTRIBUTES:
             stars[attr].pop(i)
 
+    format_attr = str
+    try:
+        filtered_value = int(filtered_value)
+    except:
+        pass
+    else:
+        format_attr = round
+    try:
+        filtered_value = float(filtered_value)
+    except:
+        pass
+    else:
+        def round_2(a):
+            return round(a,2)
+        format_attr = round_2
+
     for i in range(len(stars[parameter])-1, -1, -1):
-        if str(stars[parameter][i]) == value:
+        if format_attr(stars[parameter][i]) == filtered_value:
             delete_at_index(i)
 
 def plot_it(stars):
