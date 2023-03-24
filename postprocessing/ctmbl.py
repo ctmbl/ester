@@ -147,22 +147,24 @@ def save_default(stars):
     with open(SAVE_FILE, 'wb') as f:
         pickle.dump(stars, f)
 
-def main():
+def get_stars():
+    if ARGS.load:
+        return get_default()
+
+    # stars initialization
+    stars = {}
+    for attr in ATTRIBUTES:
+        stars.update({attr: []})
+
     # get models paths
     models_paths = []
     for folder in ARGS.folders:
         models_paths.extend(get_models_paths(folder))
     LOGGER.debug("Found %s models: [%s]", len(models_paths), models_paths)
 
-    stars = {}
-
-    # stars initialization
-    for attr in ATTRIBUTES:
-        stars.update({attr: []})
-
     if len(models_paths) == 0:
-        LOGGER.warning("No models found in this directory, using older values for stars dict")
-        stars = get_default()
+        LOGGER.critical("No models found in this directory...")
+        exit(1)
 
     # stars filling
     for is_model_2d, model in yield_model(models_paths):
@@ -173,6 +175,11 @@ def main():
                 continue
             stars[attr].append(getattr(model, attr))
         LOGGER.debug("new values 'M: %s, R:%s, Z:%s, Omega_bk:%s' added", float(model.M), float(model.R), float(model.Z[0][0]), float(model.Omega_bk))
+
+    return stars
+
+def main():
+    stars = get_stars()
 
     if ARGS.save:
         save_default(stars)
@@ -193,8 +200,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--folders",
         "-f",
-        default=".",
-        help="the path to the folder containing 1d models",
+        help="the path to the folder containing ESTER models",
         nargs="+",
     )
     parser.add_argument(
@@ -209,6 +215,11 @@ if __name__ == "__main__":
         "--save",
         action="store_true",
         help="if used, save data to a storage file"
+    )
+    parser.add_argument(
+        "--load",
+        action="store_true",
+        help="if used, load previously saved data to be used instead of ESTER .h5 files"
     )
     parser.add_argument(
         "--scatterplot3d",
@@ -256,10 +267,21 @@ if __name__ == "__main__":
         logging.critical("Logger setup failed, exiting...")
         exit(1)
 
-    for folder in ARGS.folders:
-        if not os.path.exists(folder) or os.path.isfile(folder):
-            logging.critical("'%s' isn't a path to a folder", folder)
-            parser.error("Note a folder passed with '-f'")
+    # Arguments validation
+    if ARGS.save and ARGS.load:
+        logging.critical("'--save' and '--load' are incompatible")
+        exit(1)
+    if ARGS.load and ARGS.folders:
+        logging.critical("'--folders' and '--load' are incompatible")
+        exit(1)
+    elif (not ARGS.load) and not(ARGS.folders):
+        logging.critical("Neither '--folders' nor '--load' passed, one is required")
+        exit(1)
+    if ARGS.folders:
+        for folder in ARGS.folders:
+            if not os.path.exists(folder) or os.path.isfile(folder):
+                logging.critical("'%s' isn't a path to a folder", folder)
+                parser.error("Note a folder passed with '-f'")
     if len(ARGS.plot) != 3:
         logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
         exit(1)
