@@ -258,8 +258,8 @@ if __name__ == "__main__":
 
     for folder in ARGS.folders:
         if not os.path.exists(folder) or os.path.isfile(folder):
-            logging.critical("'%s' isn't a path to a folder", ARGS.folders)
-            exit(1)
+            logging.critical("'%s' isn't a path to a folder", folder)
+            parser.error("Note a folder passed with '-f'")
     if len(ARGS.plot) != 3:
         logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
         exit(1)
