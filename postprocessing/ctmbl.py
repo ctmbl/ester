@@ -13,7 +13,6 @@ LOGGER = None
 SAVE_FILE = 'save_stars_data.pkl'
 # the list of attributes to extract from each model
 ATTRIBUTES = ["M", "R", "Z", "Tc", "X", "ndomains", "eos", "Omega_bk", "test_virial", "test_energy"]
-ARRAYS_ATTR = ["Z", "X"]
 
 def plot_scatterplot2D(ax, stars):
     if len(stars) == 0:
@@ -147,6 +146,19 @@ def save_default(stars):
     with open(SAVE_FILE, 'wb') as f:
         pickle.dump(stars, f)
 
+def fill_stars(stars, models_paths):
+    def parse_attribute(attribute):
+        if type(attribute) == np.ndarray:
+            return attribute[0][0]
+        return attribute
+
+    for is_model_2d, model in yield_model(models_paths):
+        # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
+        for attr in ATTRIBUTES:
+            value = parse_attribute(getattr(model, attr))
+            stars[attr].append(value)
+        LOGGER.debug("new values 'M: %s, R:%s, Z:%s, Omega_bk:%s' added", float(model.M), float(model.R), float(model.Z[0][0]), float(model.Omega_bk))
+
 def get_stars():
     if ARGS.load:
         return get_default()
@@ -167,14 +179,7 @@ def get_stars():
         exit(1)
 
     # stars filling
-    for is_model_2d, model in yield_model(models_paths):
-        # TEMPLATE: {"M": [model.M], "R": [model.R], "Z": [model.Z], Omega_bk": [model.Omega_bk], "test_virial": [model.test_virial], "test_energy": [model.test_energy]}
-        for attr in ATTRIBUTES:
-            if attr in ARRAYS_ATTR:
-                stars[attr].append(getattr(model, attr)[0][0])
-                continue
-            stars[attr].append(getattr(model, attr))
-        LOGGER.debug("new values 'M: %s, R:%s, Z:%s, Omega_bk:%s' added", float(model.M), float(model.R), float(model.Z[0][0]), float(model.Omega_bk))
+    fill_stars(stars, models_paths)
 
     return stars
 
