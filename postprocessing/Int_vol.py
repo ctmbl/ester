@@ -9,7 +9,8 @@ import argparse
 import os
 
 def main():
-      a=star2d(os.path.abspath(ARGS.model))
+      a=star2d(ARGS.model)
+
       nc=a.conv
       print('nb of domains in the core',nc)
 
@@ -32,7 +33,6 @@ def main():
       # Then we integrate over 'r' on the first ncore grid points
       M=dot(dma,Icheb)
 
-
       rhoc=a.rhoc
       R=a.R
       Mcore=M*rhoc*R**3/M_SUN
@@ -41,12 +41,16 @@ def main():
 def get_args():
       parser = argparse.ArgumentParser()
       parser.add_argument(
-      "model",
-      type=str,
-      help="the path to the folder containing ESTER model",
+            "model",
+            type=str,
+            help="the path to a 2D ESTER model",
       )
+      args = parser.parse_args()
+      if not os.path.isfile(args.model):
+            print("first argument 'model' must be a path to a valid file")
+            exit(1)
 
-      return parser.parse_args()
+      return args
 
 if __name__ == '__main__':
       ARGS = get_args()
