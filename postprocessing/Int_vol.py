@@ -5,9 +5,11 @@
 
 from ester import *
 from numpy import *
+import argparse
+import os
 
 def main():
-      a=star2d('M5O3.h5')
+      a=star2d(os.path.abspath(ARGS.model))
       nc=a.conv
       print('nb of domains in the core',nc)
 
@@ -36,5 +38,16 @@ def main():
       Mcore=M*rhoc*R**3/M_SUN
       print('M core = %6.5f'%Mcore,' M sun')
 
+def get_args():
+      parser = argparse.ArgumentParser()
+      parser.add_argument(
+      "model",
+      type=str,
+      help="the path to the folder containing ESTER model",
+      )
+
+      return parser.parse_args()
+
 if __name__ == '__main__':
+      ARGS = get_args()
       main()
