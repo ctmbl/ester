@@ -28,10 +28,17 @@ def plot_scatterplot2D(ax, stars):
 
     ax.set_xlabel(X)
     ax.set_ylabel(Y)
+    if X.startswith("log"):
+        ax.set_xscale('log')
+        X = X[3:]
+    if Y.startswith("log"):
+        ax.set_yscale("log")
+        Y = Y[3:]
 
     LOGGER.info("Display stars")
 
-    return ax.scatter(stars[X], stars[Y], c=stars[C], data=stars, cmap=cmap, norm=norm)
+    #return ax.scatter(stars[X], stars[Y], c=stars[C], data=stars, cmap=cmap, norm=norm)
+    return ax.scatter(stars[X], stars[Y], c=stars[C], data=stars, cmap=cmap)
 
 # obsolete:
 def plot_tests_fM(stars, ax):
@@ -312,7 +319,7 @@ if __name__ == "__main__":
         logging.critical("Exactly 3 attributes are needed with --plot, got %s: %s", len(ARGS.plot), ARGS.plot)
         exit(1)
     for attr in ARGS.plot:
-        if attr not in ATTRIBUTES:
+        if attr not in ATTRIBUTES + ["log"+attr for attr in ATTRIBUTES]:
             logging.critical("'%s' is an unknown attributes, please choose only one of %s", attr, ATTRIBUTES)
             exit(1)
     logging.info("Will look for %dD ESTER models", ARGS.ester)
