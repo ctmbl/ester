@@ -41,7 +41,7 @@ find_package(HDF5 COMPONENTS CXX)
 # find_package(VTK 6.3)
 
 if(NOT DEFINED CBLAS_LIBRARIES)
-    message(WARNING "CBLAS_LIBRARIES not specified in command line, trying to find it automatically (this may fail)")
+    message(WARNING "CBLAS_LIBRARIES not specified in command line, trying to find it automatically (this may fail) TO BE TESTED ON UBUNTU THIS MAY NOT BE WANTED NOR NEEDED IF USING A STATIC LIBRARY")
     find_package(CBLAS REQUIRED)
     message(NOTICE "Found CBLAS at ${CBLAS_LIBRARIES}")
 endif()
